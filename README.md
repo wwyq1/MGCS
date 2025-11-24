@@ -8,7 +8,7 @@
    ```
 3. 对于训练好的跨模态匹配模型的ckpt的评估指令，这里同样给出在作者自己服务器上运行命令仅供参考：
      ```
-    python evaluation.py  --mode_path "/root/WW-XD/ESC-main/output/2025_05_20_21_43_48/checkpoint_dev_best.pth.tar" --data_name f30k_precomp --data_path "/root/autodl-tmp/YQ/download/data/" --vocab_path "/root/autodl-tmp/YQ/download/vocab/f30k/"
+    python evaluation.py  --mode_path "/root/WW-XD/MGCS/output/2025_05_20_21_43_48/checkpoint_dev_best.pth.tar" --data_name f30k_precomp --data_path "/root/autodl-tmp/YQ/download/data/" --vocab_path "/root/autodl-tmp/YQ/download/vocab/f30k/"
      ```
      
 
