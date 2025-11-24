@@ -543,9 +543,22 @@ def i2t(npts, sims, per_captions=1, return_ranks=False):
     top1 = np.zeros(npts)
     top5 = np.zeros((npts, 5), dtype=int)
     retreivaled_index = []
+    # 存储每个图像的检索结果（只存储前15个）
+    retrieval_results = []
+    
+    # 只处理前15个图像
+    num_to_show = min(15, npts)
+    
     for index in range(npts):
         inds = np.argsort(sims[index])[::-1]
         retreivaled_index.append(inds)
+        
+        # 只记录前15个图像的结果
+        if index < num_to_show:
+            # 记录当前图像的检索结果（前10个文本）
+            top_texts = inds[:10]
+            retrieval_results.append((index, top_texts))
+        
         # Score
         rank = 1e20
         for i in range(per_captions * index, per_captions * index + per_captions, 1):
@@ -555,6 +568,11 @@ def i2t(npts, sims, per_captions=1, return_ranks=False):
         ranks[index] = rank
         top1[index] = inds[0]
         top5[index] = inds[0:5]
+
+    # 输出图像检索文本的详细结果（只输出前15个）
+    print("\nImage to Text Retrieval Results (First 15 Images):")
+    for img_idx, text_ids in retrieval_results:
+        print(f"  Image ID: {img_idx} -> Retrieved Text IDs: {text_ids}")
 
     # Compute metrics
     r1 = 100.0 * len(np.where(ranks < 1)[0]) / len(ranks)
@@ -579,17 +597,38 @@ def t2i(npts, sims, per_captions=1, return_ranks=False):
     ranks = np.zeros(per_captions * npts)
     top1 = np.zeros(per_captions * npts)
     top5 = np.zeros((per_captions * npts, 5), dtype=int)
+    # 存储每个文本的检索结果（只存储前15个）
+    retrieval_results = []
 
     # --> (per_captions * N(caption), N(image))
     sims = sims.T
     retreivaled_index = []
+    
+    # 只处理前15个文本
+    num_to_show = min(15, per_captions * npts)
+    count = 0
+    
     for index in range(npts):
         for i in range(per_captions):
-            inds = np.argsort(sims[per_captions * index + i])[::-1]
+            text_idx = per_captions * index + i
+            inds = np.argsort(sims[text_idx])[::-1]
             retreivaled_index.append(inds)
-            ranks[per_captions * index + i] = np.where(inds == index)[0][0]
-            top1[per_captions * index + i] = inds[0]
-            top5[per_captions * index + i] = inds[0:5]
+            
+            # 只记录前15个文本的结果
+            if count < num_to_show:
+                # 记录当前文本的检索结果（前10个图像）
+                top_images = inds[:10]
+                retrieval_results.append((text_idx, top_images))
+                count += 1
+            
+            ranks[text_idx] = np.where(inds == index)[0][0]
+            top1[text_idx] = inds[0]
+            top5[text_idx] = inds[0:5]
+
+    # 输出文本检索图像的详细结果（只输出前15个）
+    print("\nText to Image Retrieval Results (First 15 Texts):")
+    for text_idx, img_ids in retrieval_results:
+        print(f"  Text ID: {text_idx} -> Retrieved Image IDs: {img_ids}")
 
     # Compute metrics
     r1 = 100.0 * len(np.where(ranks < 1)[0]) / len(ranks)

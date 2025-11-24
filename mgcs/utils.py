@@ -81,10 +81,20 @@ def save_checkpoint(state, is_best, filename="checkpoint.pth.tar", prefix=""):
         if not tries:
             raise error
 
-
 def adjust_learning_rate(opt, optimizer, epoch):
-    """Sets the learning rate to the initial LR
-       decayed by 10 every 30 epochs"""
-    lr = opt.learning_rate * (0.1 ** (epoch // opt.lr_update))
+    """根据epoch衰减学习率，特别是后期降低学习率"""
+    lr = opt.learning_rate * (0.5 ** (epoch // opt.lr_update))
+    # 当epoch过半后加速衰减
+    if epoch > opt.num_epochs * 0.5:
+        lr *= 0.1
+    if epoch > opt.num_epochs * 0.75:
+        lr *= 0.1
+        
     for param_group in optimizer.param_groups:
-        param_group["lr"] = lr
+        param_group['lr'] = lr
+#def adjust_learning_rate(opt, optimizer, epoch):
+    #"""Sets the learning rate to the initial LR
+      # decayed by 10 every 30 epochs"""
+    #lr = opt.learning_rate * (0.1 ** (epoch // opt.lr_update))
+    #for param_group in optimizer.param_groups:
+        #param_group["lr"] = lr
